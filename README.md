@@ -12,8 +12,7 @@
 ## 简介
 简体中文| [English](README_EN.md)
 
-&nbsp;&nbsp;&nbsp;&nbsp;chipeak_cv_data_tool是一个基于各种人工智能标注工具生成的数据集，跟深度学习图像标注工具Labelme生成的数据集相互转换的开源工具箱。
-主分支代码目前支持 coco数据集与labelme数据集互转。
+&nbsp;&nbsp;&nbsp;&nbsp;chipeak_cv_data_tool主要用于多种数据集(计算机视觉)格式之间的相互转换,如coco、labelme等。另外还集成数据、文件、视频等文件常用的处理功能。
 
 
 ## 主要特性
