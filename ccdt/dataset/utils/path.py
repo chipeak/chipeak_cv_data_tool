@@ -61,3 +61,29 @@ def get_valid_paths(root_dir, file_formats):
                 # 如果文件在文件列表中，则返回真继续往下执行
                 files_name.append(file)
     return files_name
+
+
+def get_videos_path(input_videos_dir, output_dir, file_formats):
+    """
+    视频切片获取路径工具方法，暂时不用
+    :param input_videos_dir:
+    :param output_dir:
+    :param file_formats:
+    :return:
+    """
+    videos_path = []
+    file_names = []
+    # save_path = os.path.join(imgs_dir)
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    for root, dirs, files in os.walk(input_videos_dir, topdown=False):
+        # if root == videos_dir:
+        #     continue
+        for filename in files:
+            name = filename.split('.')
+            if name[1] in file_formats:
+                videos_path.append(os.path.join(root, filename))
+                file_names.append(os.path.join(output_dir, name[0]))
+                if not os.path.exists(os.path.join(output_dir, name[0])):
+                    os.mkdir(os.path.join(output_dir, name[0]))
+    return videos_path, file_names

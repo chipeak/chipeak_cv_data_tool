@@ -15,7 +15,7 @@ def parser_args():
     parser.add_argument('--output_dir', type=str, help="输入抠图保存路径")
     parser.add_argument('--input_dir', type=str, help="输入替换路径")
     parser.add_argument('--output_format', type=str, help="输入输出格式")
-    parser.add_argument('--function', type=str, help="输入操作功能参数:convert,filter,matting,rename,visualize,merge只能输入单个")
+    parser.add_argument('--function', type=str, help="输入操作功能参数:print,convert,filter,matting,rename,visualize,merge只能输入单个")
     parser.add_argument('--filter_category', type=ast.literal_eval, help="输入类别筛选参数，单个与多个都可以输入")
     # 当不输入--only_annotation，默认为False；输入--only_annotation，才会触发True值。False处理labelme和图片，True只处理labelme
     parser.add_argument('--only_annotation', action="store_true", help="默认False，处理图片和注释文件。传参则设置为True，只处理注释文件")
@@ -24,6 +24,7 @@ def parser_args():
     parser.add_argument('--rename_category', type=ast.literal_eval, help="输入修改标签类别参数")
     parser.add_argument('--filter_empty', action="store_true", help="默认False，保留背景类。传参则设置为True，不保留背景类")
     parser.add_argument('--only_empty', action="store_true", help="默认False，不保留背景类。传参则设置为True，只保留背景类")
+    parser.add_argument('--only_annt', action="store_true", help="默认False，处理coco注释文件和图片。传参则设置为True，只处理注释文件")
 
     args = parser.parse_args()
     # 如果需要进行类别过滤，则必须要有操作功能filter参数存在
@@ -51,7 +52,7 @@ def parser_args():
 
 
 def load_datasets(datasets_info):
-
+    args = parser_args()
     # datasets_info = datasets_info
     # 目录递归操作，功能添加，默认指定父路径，然后加载全部数据
     # 添加统计功能，递归搜索后，知道有那些类别的数据，好筛选。
@@ -76,13 +77,15 @@ def load_datasets(datasets_info):
             datasets.append(dataset)
         # 使用coco类加载
         if dataset_info['format'] == 'coco' and args.output_format == 'labelme':
-            dataset = ccdt.Coco(False, images_dir=dataset_info['images_dir'], annotation_file=dataset_info['coco_file'])
+            print(args.only_annt)
+            dataset = ccdt.Coco(args.only_annt, images_dir=dataset_info['images_dir'], annotation_file=dataset_info['coco_file'])
             datasets.append(dataset)
             print("coco转labelme数据加载成功")
     return datasets
 
 
-def main(args):
+def main():
+    args = parser_args()
     global datasets
     dataset_bak = []
     # print(args)
@@ -160,6 +163,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = parser_args()
+
     # print(args)
-    main(args)
+    main()

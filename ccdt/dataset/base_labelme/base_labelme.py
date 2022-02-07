@@ -51,7 +51,11 @@ class BaseLabelme(object):
         self.labelme_paths = []
         self.images_paths = []
         for data_info in self.data_infos:
+            # print(data_info)
             image_path = os.path.join(data_info['image_dir'], data_info['image_file'])
+            # print(image_path)
+            # print(data_info['image_dir'])
+            # print(data_info['image_file'])
             if data_info['labelme_file']:
                 json_path = os.path.join(data_info['labelme_dir'], data_info['labelme_file'])
                 self.labelme_paths.append(json_path)
@@ -152,7 +156,7 @@ class BaseLabelme(object):
         """
         data_paths = []
         # 传递图片路径并返回图片路径列表，通过字典键（dataset['images_dir']）取到字典列表
-        images_name_list = path.get_valid_paths(self.images_dir, ['.png', '.jpg', '.jpeg', '.tiff', '.psd'])
+        images_name_list = path.get_valid_paths(self.images_dir, ['.png', '.jpg', '.jpeg', '.tiff', '.psd', '.JPEG'])
         if len(images_name_list) == 0:
             print(self.images_dir + ': images图像数目={}'.format(len(images_name_list)))
         images_name_dict = dict()
@@ -403,7 +407,11 @@ class BaseLabelme(object):
             os.makedirs(archive_image_path, exist_ok=True)
             if data_info['image_file'] is not None:
                 image_path = os.path.join(data_info['image_dir'], data_info['image_file'])
-                shutil.copy(image_path, archive_image_path)
+                try:
+                    shutil.copy(image_path, archive_image_path)
+                except Exception as e:
+                    # print(e)
+                    continue
                 if data_info['labelme_file'] is not None:
                     save_json_path = os.path.join(archive_json_path, data_info['labelme_file'])
                     with open(save_json_path, "w", encoding='UTF-8') as labelme_fp:  # 以写入模式打开这个文件

@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
-
-with open('README.md', 'r', encoding='utf-8') as fh:
+import io
+with io.open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
 
@@ -11,14 +11,15 @@ def get_install_requires():
         'opencv_python',  # for PyInstaller
         'numpy',
         'pycocotools',
+        'prettytable',
     ]
     return install_requires
 
 
 setup(
-    # 取名不能够用_会自动变-
+    # 取名不能够用_会自动变-   ccdt
     name='ccdt',
-    version='0.0.1',
+    version='1.0.11',
     packages=find_packages(exclude=['data']),
     install_requires=get_install_requires(),
     author='zhanyong',
@@ -26,9 +27,9 @@ setup(
     description='AI数据转换工具箱',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/540717421/chipeak_cv_data_tool',
+    url='https://github.com/chipeak/chipeak_cv_data_tool',
     project_urls={
-        'Bug Tracker': 'https://github.com/540717421/chipeak_cv_data_tool/issues',
+        'Bug Tracker': 'https://github.com/chipeak/chipeak_cv_data_tool/issues',
     },
     classifiers=[
         'Programming Language :: Python :: 3.7',

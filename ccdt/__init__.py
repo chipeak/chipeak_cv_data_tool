@@ -1,8 +1,7 @@
 from .dataset import *
 from .version import *
 from .video_tool import *
-from .videos import *
-from .file_tool import *
+# from .file_tool import *
 
-__appname__ = "labelme"
-__version__ = "4.5.13"
+__appname__ = "ccdt"
+__version__ = "1.0.1"
