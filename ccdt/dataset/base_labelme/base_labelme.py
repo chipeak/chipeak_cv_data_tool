@@ -410,7 +410,6 @@ class BaseLabelme(object):
                 try:
                     shutil.copy(image_path, archive_image_path)
                 except Exception as e:
-                    # print(e)
                     continue
                 if data_info['labelme_file'] is not None:
                     save_json_path = os.path.join(archive_json_path, data_info['labelme_file'])
