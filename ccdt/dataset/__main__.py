@@ -82,6 +82,7 @@ def load_datasets(datasets_info):
                                 annotation_file=dataset_info['coco_file'])
             datasets.append(dataset)
             print("coco转labelme数据加载成功")
+            print('测试')
     return datasets
 
 
