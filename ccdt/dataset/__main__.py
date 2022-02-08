@@ -2,7 +2,6 @@ import argparse
 import ast
 import ccdt.dataset as ccdt
 import ccdt.dataset.utils.coder
-from ccdt.dataset.utils import path
 
 
 def parser_args():
@@ -81,6 +80,8 @@ def load_datasets(datasets_info):
             dataset = ccdt.Coco(args.only_annt, images_dir=dataset_info['images_dir'], annotation_file=dataset_info['coco_file'])
             datasets.append(dataset)
             print("coco转labelme数据加载成功")
+        if dataset_info['format'] == 'coco' or args.output_format == 'labelme':
+            print('测试一下上传')
     return datasets
 
 
