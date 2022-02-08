@@ -14,7 +14,8 @@ def parser_args():
     parser.add_argument('--output_dir', type=str, help="输入抠图保存路径")
     parser.add_argument('--input_dir', type=str, help="输入替换路径")
     parser.add_argument('--output_format', type=str, help="输入输出格式")
-    parser.add_argument('--function', type=str, help="输入操作功能参数:print,convert,filter,matting,rename,visualize,merge只能输入单个")
+    parser.add_argument('--function', type=str,
+                        help="输入操作功能参数:print,convert,filter,matting,rename,visualize,merge只能输入单个")
     parser.add_argument('--filter_category', type=ast.literal_eval, help="输入类别筛选参数，单个与多个都可以输入")
     # 当不输入--only_annotation，默认为False；输入--only_annotation，才会触发True值。False处理labelme和图片，True只处理labelme
     parser.add_argument('--only_annotation', action="store_true", help="默认False，处理图片和注释文件。传参则设置为True，只处理注释文件")
@@ -77,11 +78,10 @@ def load_datasets(datasets_info):
         # 使用coco类加载
         if dataset_info['format'] == 'coco' and args.output_format == 'labelme':
             print(args.only_annt)
-            dataset = ccdt.Coco(args.only_annt, images_dir=dataset_info['images_dir'], annotation_file=dataset_info['coco_file'])
+            dataset = ccdt.Coco(args.only_annt, images_dir=dataset_info['images_dir'],
+                                annotation_file=dataset_info['coco_file'])
             datasets.append(dataset)
             print("coco转labelme数据加载成功")
-        if dataset_info['format'] == 'coco' or args.output_format == 'labelme':
-            print('测试一下上传')
     return datasets
 
 
@@ -164,6 +164,5 @@ def main():
 
 
 if __name__ == '__main__':
-
     # print(args)
     main()
