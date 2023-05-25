@@ -9,10 +9,10 @@
 	参数说明：必填参数，input_dir：输入路径，output-dir：输出路径。其余参数根据具体功能选择填参。
 
 ## Linux使用指令
-请参考[Linux入门文档](docs/linux_command_line_usage.md)学习基本使用。
+请参考[Linux入门文档](./linux_command_line_usage.md)学习基本使用。
 
 ## window使用指令
-请参考[window入门文档](docs/window_command_line_usage.md)学习基本使用。
+请参考[window入门文档](./window_command_line_usage.md)学习基本使用。
 
 ## pycharm开发使用指令如下所示
 
