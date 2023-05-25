@@ -94,9 +94,9 @@ no
 
 ```
 @misc{ccdt2021,
-  author =       {Zhan Yong and Zhu Wenhai},
+  author =       {Zhan Yong},
   title =        {{ccdt: Image Polygonal Annotation with Python}},
-  howpublished = {url{https://github.com/540717421/chipeak_cv_data_tool}},
+  howpublished = {url{https://github.com/chipeak/chipeak_cv_data_tool.git}},
   year =         {2021}
 }
 ```

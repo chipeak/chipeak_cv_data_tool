@@ -93,10 +93,10 @@ labelme:https://github.com/wkentaro/labelme
 
 ```
 @misc{ccdt2021,
-  author =       {詹勇，朱文海},
+  author =       {詹勇},
   title =        {{ccdt: Annotation conversion and file video processing tools}},
-  howpublished = {url{https://github.com/540717421/chipeak_cv_data_tool}},
-  year =         {2021}
+  howpublished = {url{https://github.com/chipeak/chipeak_cv_data_tool.git}},
+  year =         {2023}
 }
 ```
 ## ChiPeak的其它项目
