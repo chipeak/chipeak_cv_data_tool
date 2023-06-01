@@ -11,7 +11,7 @@ with io.open('README.md', 'r', encoding='utf-8') as fh:
 
 def get_install_requires():
     install_requires = [
-        'tqdm',
+        'tqdm==4.65.0',
         'opencv_python',  # for PyInstaller
         'numpy',
         'pycocotools',
@@ -19,7 +19,6 @@ def get_install_requires():
         'shapely',
         'psutil',
         'pypinyin',
-        'aiofiles',
         'Pillow'
     ]
     return install_requires
@@ -28,7 +27,7 @@ def get_install_requires():
 setup(
     # 取名不能够用_会自动变-   ccdt
     name='ccdt',
-    version='2.1.0',
+    version='2.1.4',
     packages=find_packages(exclude=['data']),
     install_requires=get_install_requires(),
     author='zhanyong',

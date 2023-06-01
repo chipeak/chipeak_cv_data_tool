@@ -146,3 +146,65 @@ def 静态方法名称():
 实列方法--方法内部需要方法实列属性。实列方法内部可以使用类名.访问类属性
 类方法--方法内部只需要访问类属性
 静态方法--方法内部，不需要访问实列属性和类属性
+
+文件上传开源项目
+https://github.com/filebrowser/filebrowser
+git@github.com:filebrowser/filebrowser.git
+安装插件，vue.js、web=prettier
+
+git config --global http.sslVerify false
+git config --global http.sslProxy https://proxy.example.com:8080
+git config --global https.sslVerify false
+git config --global https.sslProxy https://proxy.example.com:8080
+
+go mod init github.com/filebrowser/filebrowser/v2
+清除本地的模块缓存信息
+go clean -modcache
+go mod download
+移除全局的 core.compression 配置，让 Git 恢复默认的压缩方式。
+git config --global --unset core.compression
+
+go build ./...
+go env
+
+中国最可靠的 Go 模块代理
+https://goproxy.cn
+go env -w GOPROXY=https://goproxy.cn,direct
+
+set GOPROXY=https://goproxy.cn,direct
+
+set HTTP_PROXY=http://proxy.server.com:port
+set HTTPS_PROXY=http://proxy.server.com:port
+
+set HTTP_PROXY=https://goproxy.cn
+set HTTPS_PROXY=https://goproxy.cn
+git config --global user.name 'chipeak'
+git config --global user.email 'deng.ruofei@chipeak.com'
+
+
+go env -w GO111MODULE=on
+如下代理设置，下载最可靠
+go env -w GOPROXY=https://goproxy.io,direct
+
+# 设置不走 proxy 的私有仓库，多个用逗号相隔（可选）
+go env -w GOPRIVATE=*.corp.example.com
+
+# 设置不走 proxy 的私有组织（可选）
+go env -w GOPRIVATE=example.com/org_name
+
+go get github.com/asdine/storm/v3
+
+1、克隆项目
+git@github.com:filebrowser/filebrowser.git
+2、依赖安装，安装依赖的时候需要配置代理
+go get ./...
+代理配置如下执行命令
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.io,direct
+3、执行，转到server子目录执行如下指令，未必正确
+go run *.go
+4、使用go mod tidy
+会自动更新您的 go.mod 和 go.sum 文件，以确保它们与当前项目所需要的依赖项一致。
+
+==============七牛消息队列===================
+https://github.com/panjf2000/ants
