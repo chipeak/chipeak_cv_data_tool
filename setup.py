@@ -11,7 +11,7 @@ with io.open('README.md', 'r', encoding='utf-8') as fh:
 
 def get_install_requires():
     install_requires = [
-        'tqdm==4.65.0',
+        'tqdm',  # 更新指定包的版本，或者通过 >= 指定最小版本
         'opencv_python',  # for PyInstaller
         'numpy',
         'pycocotools',
@@ -27,7 +27,7 @@ def get_install_requires():
 setup(
     # 取名不能够用_会自动变-   ccdt
     name='ccdt',
-    version='2.1.4',
+    version='2.1.6',
     packages=find_packages(exclude=['data']),
     install_requires=get_install_requires(),
     author='zhanyong',
