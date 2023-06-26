@@ -122,3 +122,5 @@ We will work for you in the chipeak community
 
 Dry goods are full 📘， Wait for you 💗， The ChiPeak community is looking forward to your participation 👬
 
+## Security
+[![Security Status](https://www.murphysec.com/platform3/v31/badge/1673251865674670080.svg)](https://www.murphysec.com/console/report/1673251865636921344/1673251865674670080)

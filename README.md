@@ -121,5 +121,6 @@ labelme:https://github.com/wkentaro/labelme
 
 干货满满 📘，等你来撩 💗，ChiPeak 社区期待您的加入 👬
 
+## 安全徽章
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1673251865674670080.svg)](https://www.murphysec.com/console/report/1673251865636921344/1673251865674670080)
 
