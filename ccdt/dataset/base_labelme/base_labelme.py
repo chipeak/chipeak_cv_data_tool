@@ -17,7 +17,6 @@ from pathlib import Path
 import copy
 import json
 from ccdt.dataset.utils.encoder import Encoder
-from ccdt.dataset.utils.SegmentTree import SegmentTree
 
 
 def my_sort(item):
