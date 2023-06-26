@@ -8,6 +8,7 @@ import os
 
 from ccdt.dataset import LabelmeLoad
 from ccdt.video_tool import *
+from ccdt.video_tool.intercept import Intercept
 
 
 def get_args():
@@ -31,6 +32,10 @@ def get_args():
     parser.add_argument('--interval', type=int, default=50, help='帧提取频率，默认50，可自定义几帧切一次，输入帧号必须为整数。使用示例：--interval=10')
     parser.add_argument('-f', '--function', type=str, required=True,
                         help="目前支持功能[split(视频切片)、...]，每次只能选择一个功能进行使用。使用示例：--function=split, 或者 -f split")
+    parser.add_argument('--start_time', type=int, default=0, help='截取视频的开始时间以秒为单位')
+    parser.add_argument('--end_time', type=int, default=30, help='截取视频的结束时间以秒为单位')
+    parser.add_argument('--video_height', type=int, default=1080, help='输出视频的高度')
+    parser.add_argument('--video_weight', type=int, default=1920, help='输入视频的宽度')
     args = parser.parse_args()
     return args
 
@@ -77,7 +82,40 @@ def main():
             print("\r提取视频帧的进度为：%.2f %%" % (copy_ok_num * 100 / all_file_num), end="")
             if copy_ok_num >= all_file_num:
                 break
-
+    elif args.function == 'intercept':
+        # 如果输入是一个文件路径,就直接加入列表进行处理，如果输入是一个目录，就递归后把文件路径加入列表
+        if os.path.isfile(args.input):
+            videos_path = list()
+            videos_path.append(args.input)
+        else:
+            videos_path = LabelmeLoad.get_videos_path(args.input, args.file_formats)
+            print(args.file_formats)
+        # 创建进程池
+        po = multiprocessing.Pool(20)
+        # 创建一个队列
+        q = multiprocessing.Manager().Queue()
+        for video_path in videos_path:
+            if os.path.isfile(args.input):
+                structure_input_path = os.path.dirname(args.input)
+                new_path = video_path.replace(structure_input_path, args.output_dir)
+            else:
+                new_path = video_path.replace(args.input, args.output_dir)
+            # 向进程池中添加,截取视频指定片段
+            po.apply_async(Intercept.video_loader,
+                           args=(
+                               q, video_path, new_path, args.start_time, args.end_time,
+                               args.video_height, args.video_weight))
+        po.close()
+        # po.join()  # 加上这个打印进度就会一次性打印完毕，不会分段打印
+        all_file_num = len(videos_path)
+        copy_ok_num = 0
+        while True:
+            file_name = q.get()
+            print("\r已经完成视频截取：%s" % file_name)
+            copy_ok_num += 1
+            print("\r截取视频的进度为：%.2f %%" % (copy_ok_num * 100 / all_file_num), end="")
+            if copy_ok_num >= all_file_num:
+                break
 
 if __name__ == '__main__':
     main()
