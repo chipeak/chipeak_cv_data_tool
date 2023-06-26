@@ -2,7 +2,6 @@
 # 系统日期: 2023/5/18 15:58
 # 项目名称: async_ccdt
 # 开发者: zhanyong
-import json
 import shutil
 import asyncio
 import os
@@ -12,6 +11,7 @@ from pathlib import Path
 import argparse
 import json
 import aiofiles
+from ccdt.dataset.utils.encoder import Encoder
 
 
 class AsyncIoTask(object):
@@ -25,7 +25,7 @@ class AsyncIoTask(object):
         # 通过aiofiles.open(),实现异步方式进行文件的读写操作
         async with aiofiles.open(file_path, 'w') as f:
             # cls=json.JSONEncoder不是必须的，因为json.dumps() 函数会自动选择适当的编码器来对 Python 对象进行编码
-            await f.write(json.dumps(content, indent=2, cls=json.JSONEncoder))
+            await f.write(json.dumps(content, indent=2, cls=Encoder))
 
     @staticmethod
     async def copy_file(src_file_path: str, dst_file_path: str):
@@ -53,6 +53,7 @@ class AsyncIoTask(object):
         with ThreadPoolExecutor(thread_pool_size) as executor:
             # 一次性提交多个协程任务
             tasks = []
+            print(f'迭代异步任务开始')
             for data_info in tqdm(path_list):
                 if judge_dir:  # 传递输出路径的表示要拷贝数据，不传递表示就在输入路径下重写
                     obj_path = Path(data_info.get('image_file'))  # 初始化文件为对象
@@ -110,4 +111,5 @@ class AsyncIoTask(object):
                             # json.dumps() 将 Python 对象转化为 JSON 格式的字符串
                             tasks.append(asyncio.create_task(
                                 self.write_file(data_info['json_path'], data_info.get('labelme_info'))))
+            print(f'并发处理任务开始')
             await asyncio.gather(*tasks)  # 并发处理文件

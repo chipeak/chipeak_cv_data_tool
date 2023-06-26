@@ -41,9 +41,12 @@ def parser_args():
     parser.add_argument('--extract-portion', type=int, help='按照指定份数平均抽取，比如400张图像，抽取10分，每份40张')
     parser.add_argument('--extract-text', type=ast.literal_eval, help='按照text字段的文本内容抽取')
     parser.add_argument('--select-cut', action="store_true", help="默认False即拷贝，是拷贝还是剪切。是为True，否为False")
+    parser.add_argument('--judging-group-id-num', action="store_true", help="默认False即拷贝，有judging-group-id-num参则改变为True，否为False")
+    # parser.add_argument('--judging-single', action="store_true", help="默认False即拷贝，有judging-single参则改变为True，否为False")
     parser.add_argument('--extract-amount', type=int, help='按照指定数量抽取，比如400张图像，抽取100张')
     parser.add_argument('--print-more', action="store_true", help="打印详细信息")
     parser.add_argument('--del-label', type=ast.literal_eval, help="删除label标签")
+    parser.add_argument('--judging-letter', type=ast.literal_eval, help="判断车牌字符串中是否存在，I，o,Q")
     parser.add_argument('--label-name', type=str, help="自定义label标签，用于抽取份数时区别标注目录")
     parser.add_argument('--http-url', type=str,
                         help="minio文件对象存储中，网络文件统一资源定位器，http://192.168.1.235:9393/chipeak-dataset")
@@ -52,6 +55,7 @@ def parser_args():
     parser.add_argument('--judging-group', type=int, help='默认值为2个shape元素为一组，用于判断分组元素的数量')
     # parser.add_argument('--judging-flags', type=json.loads, help="检查flags默认标注属性，是否符合标注准则")
     parser.add_argument('--judging-flags', type=ast.literal_eval, help="检查flags默认标注属性，是否符合标注准则")
+    parser.add_argument('--judging-label', type=str, help="检查车牌默认分组属性，是否符合标注准则，车牌一定要打组，如果没有打组就筛选出来")
     parser.add_argument('--judging-polygon', type=int,
                         help='检查多边形标注的点是否超出预期数量，比如4个点的多边形，不能出现5个')
     parser.add_argument('--judging-cross-the-border', type=str, help="检查标注形状是否超越原始图像边界")
@@ -63,6 +67,7 @@ def parser_args():
                         help="默认False，填写参数代表为true，用于判断合并条件，该条件表示矩形框合并。是为True，否为False")
     parser.add_argument('--sync', action="store_true",
                         help="默认False，填写参数代表为true，用于判断是同步处理，还是异步处理。是为True，否为False")
+    parser.add_argument('--threshold', type=float, help="阈值参数，模型预测数据集，设定的阈值")
 
     args = parser.parse_args()
 
@@ -115,6 +120,8 @@ def parser_args():
         return args
     elif args.function == 'pinyin':  # 汉字转拼音
         return args
+    elif args.function == 'IOU':  # 标注数据与模型预测数据进行比较，给出漏检、误检、检出、完全预测正确、部分预测正确、完全预测错误、部分预测错误
+        return args
     else:
         assert not args.function, '传入的操作功能参数不对:{}'.format(args.function)
 
@@ -145,8 +152,7 @@ def main():
         if args.function == 'merge':  # 合并功能
             if args.rectangle_merge:  # 删除人工标注矩形框，然后与模型预测出来的矩形框进行合并功能
                 # 加载模型预测的labelme数据集
-                model_dataset_info = asyncio.run(
-                    data_info.recursive_walk(input_datasets_list[0].get('model_input_dir')))
+                model_dataset_info = asyncio.run(data_info.recursive_walk(input_datasets_list[0].get('model_input_dir')))
                 # 先删除人工标注的矩形框
                 # original_dataset_info = dataset.del_label(args.del_label)
                 dataset.labelme_rectangle_merge(args, model_dataset_info)
@@ -200,6 +206,24 @@ def main():
             dataset.cross_boundary_correction(args)
         elif args.function == 'pinyin':  # 针对标注形状超越图像边界情况，使用程序自动矫正
             dataset.hanzi_to_pinyin()
+        # TP = 标注数据集有标注框，模型预测为有标注框，并且iou重合度高。=正确检出
+        # FP = 标注数据集没有标注框，模型预测为有标注框。=误检出
+        # FN = 标注数据集有标注框，模型预测为没有标注框。=漏检出
+        # TN = 标注数据集没有标注框，模型预测结果也没有标注框。=背景
+
+        # TP：模型正确检测到的正样本数量（即检测正确且标签为1的样本数）
+        # FP：模型错误地将负样本检测为正样本的数量（即检测错误且标签为0的样本数）
+        # FN：模型没能检测到的正样本数量（即检测错误且标签为1的样本数）
+        # TN：模型正确地将负样本检测为负样本的数量（即检测正确且标签为0的样本数）
+
+        # 召回率（Recall，也称为灵敏度或真阳性率）：Recall = TP / (TP + FN)，70 / (70 + 8)
+        # 精确率（Precision，也称为查准率）：Precision = TP / (TP + FP)，70 / (70 + 0)
+        # 准确率 Accuracy = (TP + TN) / (TP + FN + FP + TN)，（70 + 26） / （70 + 8 + 26 + 0）
+        elif args.function == 'IOU':  # 把模型预测结果与人工标注结果进行对比，计算模型预测结果的漏检、误检、检出
+            # 加载模型预测的labelme数据集
+            model_dataset_info = asyncio.run(data_info.recursive_walk(input_datasets_list[0].get('model_input_dir')))
+            # 加载标注数据集
+            dataset.model_to_iou(model_dataset_info, args)
 
 
 if __name__ == '__main__':

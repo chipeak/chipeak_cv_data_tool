@@ -167,6 +167,7 @@ class BaseCoco(BaseLabelme):
         for dataset in tqdm(self.datasets):
             self.output_dir = dataset.get('output_dir')
             self.input_dir = dataset.get('input_dir')
+            # image_path = dataset.get('full_path')
             if dataset.get('background') is False:  # 为真表示为处理背景图片
                 self.image_handle(dataset)
             else:  # 处理有标注的图像
@@ -187,15 +188,21 @@ class BaseCoco(BaseLabelme):
                     for category in self.coco_dataset.get('categories'):
                         if category.get('name') == ann['label']:
                             category_id = category.get('id')
+                    # print(f'图像id为：{self.result_addImage_id}，图像路径为：{image_path}')
                     # 3、追加标注属性,核心是self.category_id要动态追加，必须要在,self.coco_dataset.get('categories')取值
-                    self.add_annotation(self.result_addImage_id, category_id, ann.get('segmentation'),
-                                        ann.get('points'), None)
+                    self.add_annotation(self.result_addImage_id, category_id, ann.get('segmentation'), ann.get('points'), None)
         print(f'把内存中labelme数据集转coco数据集的处理结果，写入文件中')
         os.makedirs(self.output_dir, exist_ok=True)
         self.coco_file_name = os.path.basename(self.input_dir) + '.json'
         out_put_coco_file = os.path.join(self.output_dir, self.coco_file_name)
         with open(out_put_coco_file, 'w', encoding='utf-8') as coco_fp:
             json.dump(self.coco_dataset, coco_fp, ensure_ascii=False, indent=2, cls=Encoder)
+        # labelme转coco完成以后才开始写打组出错的数据
+        print('=================labelme转coco结束=======================')
+        if self.check_error_dataset:  # 如果有值才保存，否则会保存出错
+            # 保存合并后的数据集
+            print(f'保存labelme转coco时，标注形状超出图像边界的出错数据集，需要人工核对矫正')
+            self.save_labelme(self.check_error_dataset, self.error_output_path, None)
 
     def labelme_shapes2coco_ann(self, dataset):
         """
@@ -289,30 +296,36 @@ class BaseCoco(BaseLabelme):
         :param one_img_ann_list:
         """
         # 多边形标注打组与不打组处理逻辑都相同
+        file_path = dataset.get('full_path')
         if len(shape['points']) == 4:
             points = np.array(shape['points'])
             point_min, point_max = points.min(axis=0), points.max(axis=0)
             # 求出坐标点的极大值和极小值后，无需管先后顺序，直接填入shape['points']中,变成矩形框左上角坐标、右下角坐标
             bbox = [[point_min[0], point_min[1]], [point_max[0], point_max[1]]]  # 把多边形标注转成矩形框
             if self.rectangle_cross_the_border(bbox, dataset, True):  # 如果函数返回为True，表示标注形状已经超出图像边界
-                file_path = dataset.get('full_path')
-                print(f'标注形状超出图像边界{file_path}')
+                print(f'标注形状超出图像边界。人工核对后，选择程序进行矫正错误{file_path}')
+                self.error_dataset_handle(dataset)
+            else:
                 # dataset.update({'output_dir': dataset.get('out_of_bounds_path')})
                 # self.check_error_dataset.append(dataset)
-            # segmentation = self.find_poly_sequential_coordinates(shape, dataset.get('full_path'))
-            # convert_segmentation = sum(segmentation, [])  # 把列表中存储的多个元组元素，合并成一个列表且保持原有排列顺序
-            segmentation = list(self.sort_lmks(np.array(shape['points'])))
-            result = [val for sublist in segmentation for val in sublist]
-            convert_segmentation = result
-            rebuild_polygon_shape = {}  # 存储shape重构为coco标注属性字典变量
-            # 内存里更新shape标注属性
-            rebuild_polygon_shape.update({'points': bbox})  # 更新多边形点的坐标为矩形框坐标
-            rebuild_polygon_shape.update({'label': shape['label']})
-            rebuild_polygon_shape.update({'segmentation': convert_segmentation})  # 新增关键点列表，按照左上、右上、右下、左下的顺序排序
-            one_img_ann_list.append(rebuild_polygon_shape)  # 把标注shape追加到转coco时的迭代列表集合中
+                # segmentation = self.find_poly_sequential_coordinates(shape, dataset.get('full_path'))
+                # convert_segmentation = sum(segmentation, [])  # 把列表中存储的多个元组元素，合并成一个列表且保持原有排列顺序
+                try:
+                    segmentation = list(self.sort_lmks(np.array(shape['points']), file_path))
+                    result = [val for sublist in segmentation for val in sublist]
+                    convert_segmentation = result
+                    rebuild_polygon_shape = {}  # 存储shape重构为coco标注属性字典变量
+                    # 内存里更新shape标注属性
+                    rebuild_polygon_shape.update({'points': bbox})  # 更新多边形点的坐标为矩形框坐标
+                    rebuild_polygon_shape.update({'label': shape['label']})
+                    rebuild_polygon_shape.update({'segmentation': convert_segmentation})  # 新增关键点列表，按照左上、右上、右下、左下的顺序排序
+                    one_img_ann_list.append(rebuild_polygon_shape)  # 把标注shape追加到转coco时的迭代列表集合中
+                except Exception as e:
+                    print(e)
+                    file_path = dataset.get('full_path')
+                    print(f'多边形排序出错{file_path}')
         else:
-            print(
-                f'车牌多边形标注不为4个点，请矫正数据，已经存储到自定义默认错误数据集目录，修改完成后覆盖真实数据集，并重新转换')
+            print(f'车牌多边形标注不为4个点，请矫正数据，已经存储到自定义默认错误数据集目录，修改完成后覆盖真实数据集，并重新转换')
             dataset.update({'output_dir': dataset.get('error_path')})
             # self.check_error_dataset.append(dataset)  # 把错误的图像标注存放到列表中，统一保存后方便修改
             # print(dataset.get('full_path'))

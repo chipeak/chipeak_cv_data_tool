@@ -4,5 +4,6 @@
 # 开发者: zhanyong
 from .encoder import Encoder
 from .labelme_load import LabelmeLoad
+from .SegmentTree import SegmentTree
 
-__all__ = ['Encoder', 'LabelmeLoad']
+__all__ = ['Encoder', 'LabelmeLoad', 'SegmentTree']

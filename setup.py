@@ -19,7 +19,8 @@ def get_install_requires():
         'shapely',
         'psutil',
         'pypinyin',
-        'Pillow'
+        'Pillow',
+        'aiofiles'
     ]
     return install_requires
 
@@ -27,7 +28,7 @@ def get_install_requires():
 setup(
     # 取名不能够用_会自动变-   ccdt
     name='ccdt',
-    version='2.1.6',
+    version='2.1.25',
     packages=find_packages(exclude=['data']),
     install_requires=get_install_requires(),
     author='zhanyong',
