@@ -35,7 +35,7 @@ def parser_args():
                         help="筛选属性，包含label（类别）、shape_type（类别形状）、flags（类别属性）")
     parser.add_argument('--filter-flags', type=ast.literal_eval,
                         help="类别属性筛选，输入类别属性字典列表。比如person类下有，手、脚、头")
-    parser.add_argument('--file_formats', default=['.jpg', '.jpeg', '.png', '.JPEG', '.JPG', '.PNG'], type=str,
+    parser.add_argument('--file-formats', default=['.jpg', '.jpeg', '.png', '.JPEG', '.JPG', '.PNG'], type=str,
                         help="文件格式")
     parser.add_argument('--filter-combin', action="store_true", help="是否组合筛选，是为True，否为False")
     parser.add_argument('--extract-portion', type=int, help='按照指定份数平均抽取，比如400张图像，抽取10分，每份40张')

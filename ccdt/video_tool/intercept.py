@@ -3,8 +3,9 @@
 # 系统日期: 2023/06/26 15:33
 # 项目名称: chipeak_cv_data_tool
 # 开发者: Luzhixun
-import os
 import cv2
+import os
+
 
 class Intercept(object):
     @classmethod
@@ -19,13 +20,12 @@ class Intercept(object):
         :param height: 保存视频的高度
         :param weight: 保存视频的宽度
         """
-
+        mkdir_save_path = os.path.dirname(save_path)
+        os.makedirs(mkdir_save_path, exist_ok=True)
         video = cv2.VideoCapture(video_path)
         fps = video.get(cv2.CAP_PROP_FPS)
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        writer = cv2.VideoWriter(save_path, fourcc, fps,
-                                 (weight, height), True)
-
+        writer = cv2.VideoWriter(save_path, fourcc, fps, (weight, height), True)
         connt = 0
         while True:
             ret, frame = video.read()
