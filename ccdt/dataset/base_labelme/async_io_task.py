@@ -72,8 +72,9 @@ class AsyncIoTask(object):
                             if index is True:  # 文件移动
                                 tasks.append(asyncio.create_task(
                                     self.move_file(data_info['full_path'], save_images_dir)))
-                                tasks.append(asyncio.create_task(
-                                    self.move_file(data_info['original_json_path'], save_labelme_dir)))
+                                if data_info.get('background') is True:  # 不为背景才移动json文件
+                                    tasks.append(asyncio.create_task(
+                                        self.move_file(data_info['original_json_path'], save_labelme_dir)))
                             else:  # 文件拷贝
                                 # 使用 os.path.normpath() 函数，将 Windows 路径转换成标准的跨平台的路径格式
                                 if os.path.normpath(data_info['input_dir']) == os.path.normpath(data_info['output_dir']):

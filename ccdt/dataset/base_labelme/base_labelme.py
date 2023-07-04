@@ -167,8 +167,8 @@ class BaseLabelme(metaclass=SingletonMeta):
             property_tb.add_row([data.get('label'), data.get('shape_type'), data.get('flags')])
         # print(property_tb)
         # print(num_tb)
-        # print(num_tb.get_string(title=title))
-        # print(property_tb.get_string(title=title))
+        print(num_tb.get_string(title=title))
+        print(property_tb.get_string(title=title))
 
     def split_list(self, parameter):
         """
@@ -1244,6 +1244,8 @@ class BaseLabelme(metaclass=SingletonMeta):
         error_check = 0  # 误检出
         leak_check = 0  # 漏检出
         right_check = 0  # 正确检出
+        leak_list = list()
+        right_list = list()
         # 同时遍历两个列表，进行比较计算
         for mark_data, model_data in zip(self.datasets, model_dataset):
             # print(mark_data)
@@ -1261,6 +1263,7 @@ class BaseLabelme(metaclass=SingletonMeta):
                 # 标注有，预测没有，漏检出加1
                 if mark_data.get('background') is True and model_data.get('background') is False:
                     leak_check += 1
+                    leak_list.append(model_data)  # 追加模型预测漏检数据
                 # 标注没有，预测有，误检出加1
                 if mark_data.get('background') is False and model_data.get('background') is True:
                     error_check += 1
@@ -1276,19 +1279,44 @@ class BaseLabelme(metaclass=SingletonMeta):
                                                            parameter.threshold, model_data.get('image_width'), model_data.get('image_height'))
                     if leak_detection or error_detection:
                         leak_check += 1
+                        leak_list.append(model_data)  # 追加模型预测漏检数据
                     if error_detection is False and leak_detection is False:  # 如果既不是误检出，也不是漏检出，则判断为正确检出
                         right_check += 1
+                        right_list.append(model_data)  # 追加模型预测正确检出数据
             else:
                 print(f'当前计算IOU文件MD5值不同或文件数量未保持一致，请核对标注数据集与模型预测数据集')
         # 计算并打印结果
-        # 图像精确率=right_check/model_positive
-        images_accuracy = round(right_check / model_positive, 4)
-        # 图像召回率=right_check/mark_positive
-        images_recall = round(right_check / mark_positive, 4)
-        statistical_tb = pt.PrettyTable(['误检出', '漏检出', '背景图像', '正确检出', '图像精确率', '图像召回率', '标注正样本', '预测正样本'])
+        # 图像精确率=right_check/model_positive，Precision = 正确 / (正确 + 误检)
+        if right_check / (right_check + error_check) == 0:
+            precision = 0
+        else:
+            precision = right_check / (right_check + error_check)
+        images_precision = round(precision, 4)
+        # 图像召回率=right_check/mark_positive，Recall = 正确 / (正确 + 漏检)
+        if right_check / (right_check + leak_check) == 0:
+            recall = 0
+        else:
+            recall = right_check / (right_check + leak_check)
+        images_recall = round(recall, 4)
+        # 图像准确率=(正确 + 背景) / (正确 + 背景 + 误检 + 漏检)，
+        if (right_check + negative_sample) / (right_check + negative_sample + error_check + leak_check) == 0:
+            accuracy = 0
+        else:
+            accuracy = (right_check + negative_sample) / (right_check + negative_sample + error_check + leak_check)
+        images_accuracy = round(accuracy, 4)
+        statistical_tb = pt.PrettyTable(['误检出', '漏检出', '背景图像', '正确检出', '图像精确率', '图像召回率', '标注正样本', '预测正样本', '图像准确率'])
         # statistical_tb.align = "l"
-        statistical_tb.add_row([error_check, leak_check, negative_sample, right_check, images_accuracy, images_recall, mark_positive, model_positive])
+        statistical_tb.add_row(
+            [error_check, leak_check, negative_sample, right_check, images_precision, images_recall, mark_positive, model_positive, images_accuracy])
         print(statistical_tb)
+        # 筛选漏检检出
+        if parameter.leak_check:
+            self.save_labelme(leak_list, self.output_dir, None)
+        # 筛选正确检出
+        if parameter.right_check:
+            self.save_labelme(right_list, self.output_dir, None)
+
+        # 把漏检出与正确检出进行比对，MD5值相同的留下
 
     # @staticmethod
     def bbox_iou(self, box1, box2, w, h):
@@ -1362,3 +1390,7 @@ class BaseLabelme(metaclass=SingletonMeta):
             else:
                 return True
         return False
+
+    def compare_labelme(self, right_check):
+        pass
+        # 比较是找到了MD5值相同的漏检与正确检出，如何区分属于第一次还是第二次的，方便labelme打开看

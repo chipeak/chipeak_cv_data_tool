@@ -68,6 +68,10 @@ def parser_args():
     parser.add_argument('--sync', action="store_true",
                         help="默认False，填写参数代表为true，用于判断是同步处理，还是异步处理。是为True，否为False")
     parser.add_argument('--threshold', type=float, help="阈值参数，模型预测数据集，设定的阈值")
+    parser.add_argument('--leak-check', action="store_true",
+                        help="默认False，填写参数代表为true，用于筛选漏检出数据。是为True，否为False")
+    parser.add_argument('--right-check', action="store_true",
+                        help="默认False，填写参数代表为true，用于筛选正确检出数据。是为True，否为False")
 
     args = parser.parse_args()
 
@@ -121,6 +125,8 @@ def parser_args():
     elif args.function == 'pinyin':  # 汉字转拼音
         return args
     elif args.function == 'IOU':  # 标注数据与模型预测数据进行比较，给出漏检、误检、检出、完全预测正确、部分预测正确、完全预测错误、部分预测错误
+        return args
+    elif args.function == 'compare':  # 误检与漏检比较功能，把MD5值相同的留下
         return args
     else:
         assert not args.function, '传入的操作功能参数不对:{}'.format(args.function)
@@ -224,6 +230,11 @@ def main():
             model_dataset_info = asyncio.run(data_info.recursive_walk(input_datasets_list[0].get('model_input_dir')))
             # 加载标注数据集
             dataset.model_to_iou(model_dataset_info, args)
+        elif args.function == 'IOU':#数据集比较功能，目前比较漏检和正确检出图像相同的情况
+            # 加载正确检出数据集
+            right_check_dataset_info = asyncio.run(data_info.recursive_walk(input_datasets_list[0].get('model_input_dir')))
+            # 加载漏检出数据集
+            dataset.compare_labelme(right_check_dataset_info, args)
 
 
 if __name__ == '__main__':
