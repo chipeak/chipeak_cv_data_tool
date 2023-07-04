@@ -1287,22 +1287,13 @@ class BaseLabelme(metaclass=SingletonMeta):
                 print(f'当前计算IOU文件MD5值不同或文件数量未保持一致，请核对标注数据集与模型预测数据集')
         # 计算并打印结果
         # 图像精确率=right_check/model_positive，Precision = 正确 / (正确 + 误检)
-        if right_check / (right_check + error_check) == 0:
-            precision = 0
-        else:
-            precision = right_check / (right_check + error_check)
+        precision = right_check / model_positive
         images_precision = round(precision, 4)
         # 图像召回率=right_check/mark_positive，Recall = 正确 / (正确 + 漏检)
-        if right_check / (right_check + leak_check) == 0:
-            recall = 0
-        else:
-            recall = right_check / (right_check + leak_check)
+        recall = right_check / mark_positive
         images_recall = round(recall, 4)
         # 图像准确率=(正确 + 背景) / (正确 + 背景 + 误检 + 漏检)，
-        if (right_check + negative_sample) / (right_check + negative_sample + error_check + leak_check) == 0:
-            accuracy = 0
-        else:
-            accuracy = (right_check + negative_sample) / (right_check + negative_sample + error_check + leak_check)
+        accuracy = (right_check + negative_sample) / (right_check + negative_sample + error_check + leak_check)
         images_accuracy = round(accuracy, 4)
         statistical_tb = pt.PrettyTable(['误检出', '漏检出', '背景图像', '正确检出', '图像精确率', '图像召回率', '标注正样本', '预测正样本', '图像准确率'])
         # statistical_tb.align = "l"
